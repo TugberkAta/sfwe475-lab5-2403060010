@@ -1,9 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { getTask } from "@/lib/tasks";
 
 const TaskIdSchema = z.coerce.number().int().positive();
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const parsed = TaskIdSchema.safeParse(id);
+  const task = parsed.success ? await getTask(parsed.data) : null;
+  return {
+    title: task ? `${task.title} | Task Board` : `Task ${id} | Task Board`,
+  };
+}
 
 export default async function TaskPage({
   params,
